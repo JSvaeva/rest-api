@@ -25,6 +25,11 @@ class BlogPostController extends Controller
      */
     public function store(Request $request)
     {
+        $request->validate([
+            'title' => 'required|max:100',
+            'content' => 'required|min:10|max:5000',
+        ]);
+
         return BlogPost::create($request->all());
     }
 
@@ -48,6 +53,11 @@ class BlogPostController extends Controller
      */
     public function update(Request $request, $id)
     {
+        $request->validate([
+            'title' => 'required|max:100',
+            'content' => 'required|min:10|max:100',
+        ]);
+
         $blogPost = BlogPost::find($id);        
         $blogPost->update($request->all());
     
