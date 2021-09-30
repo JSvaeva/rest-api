@@ -15,7 +15,7 @@ class BlogPostController extends Controller
      */
     public function index()
     {
-        $blogPosts = BlogPost::all();
+        $blogPosts = BlogPost::simplePaginate(10);
         
         $blogPosts = $blogPosts->map(function ($item, $key) {
             return collect($item)->except(['created_at', 'updated_at'])->toArray();
