@@ -15,7 +15,13 @@ class BlogPostController extends Controller
      */
     public function index()
     {
-        return BlogPost::all();
+        $blogPosts = BlogPost::all();
+        
+        $blogPosts = $blogPosts->map(function ($item, $key) {
+            return collect($item)->except(['created_at', 'updated_at'])->toArray();
+        });
+
+        return $blogPosts;
     }
 
     /**
@@ -43,7 +49,7 @@ class BlogPostController extends Controller
      */
     public function show($id)
     {
-        return BlogPost::find($id);
+        return BlogPost::find($id)->except(['created_at', 'updated_at']);
     }
 
     /**
