@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\BlogPost;
+use App\Models\User;
 
 class BlogPostController extends Controller
 {
@@ -28,6 +29,7 @@ class BlogPostController extends Controller
         $request->validate([
             'title' => 'required|max:100',
             'content' => 'required|min:10|max:5000',
+            'author_id' => 'required'
         ]);
 
         return BlogPost::create($request->all());
@@ -55,7 +57,8 @@ class BlogPostController extends Controller
     {
         $request->validate([
             'title' => 'required|max:100',
-            'content' => 'required|min:10|max:100',
+            'content' => 'required|min:10|max:5000',
+            'author_id' => 'required'
         ]);
 
         $blogPost = BlogPost::find($id);        
@@ -73,5 +76,10 @@ class BlogPostController extends Controller
     public function destroy($id)
     {
         return Post::destroy($id);
+    }
+
+    public function author()
+    {
+        return $this->belongsTo(User::class);
     }
 }

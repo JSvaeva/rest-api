@@ -15,8 +15,10 @@ class CreateBlogPostsTable extends Migration
     {
         Schema::create('blog_posts', function (Blueprint $table) {
             $table->id();
+            $table->bigInteger('author_id')->unsigned()->index();
             $table->string('title');
             $table->text('content');
+            $table->foreign('author_id')->references('id')->on('users');
             $table->timestamps();
         });
     }
