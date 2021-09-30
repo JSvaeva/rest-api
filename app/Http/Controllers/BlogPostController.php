@@ -13,9 +13,14 @@ class BlogPostController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index($type, $field)
     {
-        $blogPosts = BlogPost::simplePaginate(10);
+        if (($type != 'asc' && $type != 'desc') || ($field != 'created' && field != 'updated')) {
+            return null;
+        }
+
+        $blogPosts = BlogPost::orderBy($field.'_at', $type)->get();
+        $blogPosts = $blogPosts->simplePaginate(10);
         
         $blogPosts = $blogPosts->map(function ($item, $key) {
             return collect($item)->except(['created_at', 'updated_at'])->toArray();
