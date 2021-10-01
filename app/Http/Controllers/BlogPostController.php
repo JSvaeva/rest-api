@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+//use Illuminate\Support\Facades\Auth;
 use App\Models\BlogPost;
 use App\Models\User;
 
@@ -16,7 +17,7 @@ class BlogPostController extends Controller
     public function index($type, $field)
     {
         if (($type != 'asc' && $type != 'desc') || ($field != 'created' && field != 'updated')) {
-            return null;
+            abort(404);
         }
 
         $blogPosts = BlogPost::orderBy($field.'_at', $type)->get();
@@ -35,8 +36,13 @@ class BlogPostController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(Request $request) //admin
     {
+        $is_admin = Auth::user()->is_admin;
+        if (!$is_admin) {
+            abort(404);
+        }
+
         $request->validate([
             'title' => 'required|max:100',
             'content' => 'required|min:10|max:5000',
@@ -64,8 +70,13 @@ class BlogPostController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, $id) //admin
     {
+        $is_admin = Auth::user()->is_admin;
+        if (!$is_admin) {
+            abort(404);
+        }
+
         $request->validate([
             'title' => 'required|max:100',
             'content' => 'required|min:10|max:5000',
@@ -84,8 +95,13 @@ class BlogPostController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy($id) //admin
     {
+        $is_admin = Auth::user()->is_admin;
+        if (!$is_admin) {
+            abort(404);
+        }
+
         return Post::destroy($id);
     }
 
