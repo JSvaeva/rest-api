@@ -10,6 +10,10 @@ use App\Models\User;
 
 class BlogPostController extends Controller
 {
+    public function __construct() {
+        $this->middleware('auth');
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -28,22 +32,12 @@ class BlogPostController extends Controller
         $perPage = 15;
 
         $blogPosts = BlogPost::orderBy($field.'_at', $type)->get();
-        $blogPosts = $blogPosts->map(function ($item, $key) {
-            return collect($item)->except(['created_at', 'updated_at'])->toArray();
-        });
-
         $blogPosts = $blogPosts->paginate($perPage);
 
-        return response()->json(['data' => $blogPost], 200);
+        return response()->json(['data' => $blogPosts], 200);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request) //admin
+    public function create(Request $request) //admin
     {
         if (!Auth::check()) {
             return response()->json([
@@ -54,19 +48,9 @@ class BlogPostController extends Controller
             ], 401);
         }
 
-        if (!Auth::user()->is_admin) {
-            return response()->json([
-                'http_code' => 403,
-                'code' => 1, 
-                'title' => 'Access Error',
-                'message' => 'You don\'t have the access to this page'
-            ], 403);
-        }
-
         $validator = Validator::make($request->all(), [
             'title' => 'required|max:100',
-            'content' => 'required|min:10|max:5000',
-            'author_id' => 'required'
+            'content' => 'required|min:10|max:5000'
         ]);
         if ($validator->fails()) {
             return response()->json([
@@ -77,7 +61,12 @@ class BlogPostController extends Controller
             ], 422);
         }
 
-        $blogPost = BlogPost::create($request->all());
+        $blogPost = BlogPost::create([
+            'id' => $request->id,
+            'author_id' => Auth::id(),
+            'title' => $request->title,
+            'content' => $request->content
+        ]);
         return response()->json(['data' => $blogPost], 201);
     }
 
@@ -89,6 +78,15 @@ class BlogPostController extends Controller
      */
     public function show($id)
     {
+        if (filter_var($id, FILTER_VALIDATE_INT) === false) {
+            return response()->json([
+                'http_code' => 422,
+                'code' => 1, 
+                'title' => 'Validation Error',
+                'message' => 'Id ' . $id . ' is not integer'
+            ], 422);
+        }
+
         $blogPost = BlogPost::find($id)->except(['created_at', 'updated_at']);
         return response()->json(['data' => $blogPost], 202);
     }
@@ -111,7 +109,17 @@ class BlogPostController extends Controller
             ], 401);
         }
 
-        if (!Auth::user()->is_admin) {
+        if (filter_var($id, FILTER_VALIDATE_INT) === false) {
+            return response()->json([
+                'http_code' => 422,
+                'code' => 1, 
+                'title' => 'Validation Error',
+                'message' => 'Id ' . $id . ' is not integer'
+            ], 422);
+        }
+        $blogPost = BlogPost::find($id);
+
+        if (!Auth::user()->is_admin && $blogPost->author_id !== Auth::id()) {
             return response()->json([
                 'http_code' => 403,
                 'code' => 1, 
@@ -134,7 +142,7 @@ class BlogPostController extends Controller
             ], 422);
         }
 
-        $blogPost = BlogPost::find($id);        
+                
         $blogPost->update($request->all());
     
         return response()->json(['data' => $blogPost], 202);
@@ -157,7 +165,17 @@ class BlogPostController extends Controller
             ], 401);
         }
 
-        if (!Auth::user()->is_admin) {
+        if (filter_var($id, FILTER_VALIDATE_INT) === false) {
+            return response()->json([
+                'http_code' => 422,
+                'code' => 1, 
+                'title' => 'Validation Error',
+                'message' => 'Id ' . $id . ' is not integer'
+            ], 422);
+        }
+        $blogPost = BlogPost::find($id);
+
+        if (!Auth::user()->is_admin && $blogPost->author_id !== Auth::id()) {
             return response()->json([
                 'http_code' => 403,
                 'code' => 1, 
@@ -165,15 +183,28 @@ class BlogPostController extends Controller
                 'message' => 'You don\'t have the access to this page'
             ], 403);
         }
-
-        $blogPost = BlogPost::find($id);
+        
         $blogPost->delete();
 
         return response()->json(['data' => [ 'id' => $id ]], 203);
     }
 
-    public function author()
-    {
+    public function getBlogComments($id) {
+        if (filter_var($id, FILTER_VALIDATE_INT) === false) {
+            return response()->json([
+                'http_code' => 422,
+                'code' => 1, 
+                'title' => 'Validation Error',
+                'message' => 'Id ' . $id . ' is not integer'
+            ], 422);
+        }
+
+        $perPage = 15;
+
+        return response()->json(['data' => BlogPost::find($id)->comments()->paginate($perPage)], 200);
+    }
+
+    public function leaveComment(Request $request, $blogPostId) {
         if (!Auth::check()) {
             return response()->json([
                 'http_code' => 401,
@@ -183,6 +214,24 @@ class BlogPostController extends Controller
             ], 401);
         }
 
-        return response()->json(['data' => $this->belongsTo(User::class) ], 200);
+        $validator = Validator::make($request->all(), [
+            'text' => 'required|min:10|max:500'
+        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'http_code' => 422,
+                'code' => 1, 
+                'title' => 'Validation Error',
+                'message' => $validator->messages()
+            ], 422);
+        }
+
+        $comment = Comment::create([
+            'id' => $request->id,
+            'author_id' => Auth::id(),
+            'blog_post_id' => $blogPostId,
+            'text' => $request->content
+        ]);
+        return response()->json(['data' => $comment], 201);
     }
 }
