@@ -25,6 +25,12 @@ Route::post('/blogPosts', 'App\Http\Controllers\BlogPostController@create')->nam
 Route::get('/blogPosts/{id}', 'App\Http\Controllers\BlogPostController@show')->name('blogPosts.show');
 Route::put('/blogPosts/{id}', 'App\Http\Controllers\BlogPostController@update')->name('blogPosts.update');
 Route::delete('/blogPosts/{id}', 'App\Http\Controllers\BlogPostController@destroy')->name('blogPosts.destroy');
+Route::post('/blogPosts/{id}/leavecomment', 'App\Http\Controllers\BlogPostController@leaveComment')->name('blogPosts.leaveComment');
+Route::get('/blogPosts/{id}/comments', 'App\Http\Controllers\BlogPostController@getBlogComments')->name('blogPosts.comments');
+
+Route::get('/comments/{id}', 'App\Http\Controllers\CommentsController@show')->name('comment.show');
+Route::put('/comments/{id}', 'App\Http\Controllers\CommentsController@update')->name('comment.update');
+Route::delete('/comments/{id}', 'App\Http\Controllers\CommentsController@destroy')->name('comment.destroy');
 
 //->middleware('auth');
 //need to be logged in to create comment

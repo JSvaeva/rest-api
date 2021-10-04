@@ -10,10 +10,6 @@ use App\Models\User;
 
 class BlogPostController extends Controller
 {
-    public function __construct() {
-        $this->middleware('auth');
-    }
-
     /**
      * Display a listing of the resource.
      *
@@ -31,8 +27,7 @@ class BlogPostController extends Controller
         
         $perPage = 15;
 
-        $blogPosts = BlogPost::orderBy($field.'_at', $type)->get();
-        $blogPosts = $blogPosts->paginate($perPage);
+        $blogPosts = BlogPost::orderBy($field.'_at', $type)->paginate($perPage);
 
         return response()->json(['data' => $blogPosts], 200);
     }
@@ -87,7 +82,11 @@ class BlogPostController extends Controller
             ], 422);
         }
 
-        $blogPost = BlogPost::find($id)->except(['created_at', 'updated_at']);
+        $blogPost = BlogPost::find($id);
+        
+        if (!is_null($blogPost)) {
+            $blogPost->except(['created_at', 'updated_at']);
+        }
         return response()->json(['data' => $blogPost], 202);
     }
 
