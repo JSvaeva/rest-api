@@ -245,7 +245,7 @@ class UserController extends Controller
             return response()->json(['message' => 'You are already logged in']);
         }
 
-        if (is_null($request->nameOrEmail)) {
+        if (is_null($request->email)) {
             return response()->json([
                 'http_code' => 422,
                 'code' => 1, 
@@ -262,21 +262,21 @@ class UserController extends Controller
                 'message' => 'Pwd is null'
             ], 422);
         }
+        
+		if (Auth::attempt(array('email' => $request->email, 'password' => $request->password))) {
+			return response()->json(['message' => 'You logged in successfully!']);
+		} else {
+            $user = User::where('email' , '=', $request->email)->first();
 
-		if (Auth::attempt(array('email' => $request->nameOrEmail, 'password' => bcrypt($request->password)))) {
-			return response()->json(['message' => 'You logged in successfully!']);
-		} else if (Auth::attempt(array('name' => $request->nameOrEmail, 'password' => bcrypt($request->password)))) {
-			return response()->json(['message' => 'You logged in successfully!']);
-        } else {
-			if ('email' !== $request->nameOrEmail && 'name' !== $request->nameOrEmail) {
+			if (is_null($user)) {
                 return response()->json([
                     'http_code' => 422,
                     'code' => 1, 
                     'title' => 'Login Error',
-                    'message' => 'Incorrect name/email'
+                    'message' => 'Incorrect email'
                 ], 422);
             }
-            else if ('password' !== bcrypt($request->password)) {
+            else if ($user->password !== bcrypt($request->password)) {
                 return response()->json([
                     'http_code' => 422,
                     'code' => 1, 
@@ -284,15 +284,7 @@ class UserController extends Controller
                     'message' => 'Incorrect pwd'
                 ], 422);
             }
-            else {
-                return response()->json([
-                    'http_code' => 422,
-                    'code' => 1, 
-                    'title' => 'Login Error',
-                    'message' => 'Unknown login error'
-                ], 422);
-            }
-		}		
+		}
     }
 
     public function logout() {
