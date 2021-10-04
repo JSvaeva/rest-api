@@ -27,12 +27,18 @@ class BlogPostController extends Controller
         
         $perPage = 15;
 
-        $blogPosts = BlogPost::orderBy($field.'_at', $type)->paginate($perPage); //only take some of the pagination info!!!
+        $blogPosts = BlogPost::orderBy($field.'_at', $type)->paginate($perPage);
 
-        return response()->json(['data' => $blogPosts], 200);
+        return response()->json(['data' => [
+            'items' => $blogPosts->data,
+            'current_page' => $blogPosts->current_page,
+            'per_page' => $blogPosts->per_page,
+            'last_page' => $blogPosts->last_page,
+            'total' => $blogPosts->total
+        ]], 200);
     }
 
-    public function create(Request $request) //admin
+    public function create(Request $request)
     {
         if (!Auth::check()) {
             return response()->json([
@@ -207,8 +213,27 @@ class BlogPostController extends Controller
         }
 
         $perPage = 15;
+        $blogPost = BlogPost::find($id);
 
-        return response()->json(['data' => BlogPost::find($id)->comments()->paginate($perPage)], 200); //only take some of the pagination info!!!
+        if (is_null($blogPost)) {
+            return response()->json([
+                'http_code' => 404,
+                'code' => 1, 
+                'title' => 'User Not Found',
+                'message' => 'User with id ' . $id . " does not exist"
+            ], 404);
+        }
+        
+        $comments = $blogPost->comments();
+        $comments->paginate($perPage);
+
+        return response()->json(['data' => [
+            'items' => $comments->data,
+            'current_page' => $comments->current_page,
+            'per_page' => $comments->per_page,
+            'last_page' => $comments->last_page,
+            'total' => $comments->total
+        ]], 200);
     }
 
     public function leaveComment(Request $request, $blogPostId) {

@@ -12,9 +12,15 @@ class UserController extends Controller
     public function index()
     {
         $perPage = 15;
-        $users = User::paginate($perPage); //only take some of the pagination info!!!
+        $users = User::paginate($perPage);
 
-        return response()->json(['data' => $users], 200);
+        return response()->json(['data' => [
+            'items' => $users->data,
+            'current_page' => $users->current_page,
+            'per_page' => $users->per_page,
+            'last_page' => $users->last_page,
+            'total' => $users->total
+        ]], 200);
     }
 
     public function create(Request $request)
@@ -174,7 +180,27 @@ class UserController extends Controller
 
         $perPage = 15;
 
-        return response()->json(['data' => User::find($id)->comments()->paginate($perPage)], 200); //only take some of the pagination info!!!
+        $user = User::find($id);
+
+        if (is_null($user)) {
+            return response()->json([
+                'http_code' => 404,
+                'code' => 1, 
+                'title' => 'User Not Found',
+                'message' => 'User with id ' . $id . " does not exist"
+            ], 404);
+        }
+        
+        $comments = $user->comments();
+        $comments->paginate($perPage);
+
+        return response()->json(['data' => [
+            'items' => $comments->data,
+            'current_page' => $comments->current_page,
+            'per_page' => $comments->per_page,
+            'last_page' => $comments->last_page,
+            'total' => $comments->total
+        ]], 200);
     }
 
     public function getUserBlogPosts($id) {
@@ -189,7 +215,27 @@ class UserController extends Controller
 
         $perPage = 15;
 
-        return response()->json(['data' => User::find($id)->blogPosts()->paginate($perPage)], 200); //only take some of the pagination info!!!
+        $user = User::find($id);
+
+        if (is_null($user)) {
+            return response()->json([
+                'http_code' => 404,
+                'code' => 1, 
+                'title' => 'User Not Found',
+                'message' => 'User with id ' . $id . " does not exist"
+            ], 404);
+        }
+        
+        $posts = $user->blogPosts();
+        $posts->paginate($perPage);
+
+        return response()->json(['data' => [
+            'items' => $posts->data,
+            'current_page' => $posts->current_page,
+            'per_page' => $posts->per_page,
+            'last_page' => $posts->last_page,
+            'total' => $posts->total
+        ]], 200);
     }
 
     public function authenticate(Request $request)
