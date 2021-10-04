@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Comment;
 use App\Models\BlogPost;
 use App\Models\User;
+use Validator;
 
 class CommentsController extends Controller
 {
