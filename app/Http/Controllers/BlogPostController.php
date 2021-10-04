@@ -30,11 +30,11 @@ class BlogPostController extends Controller
         $blogPosts = BlogPost::orderBy($field.'_at', $type)->paginate($perPage);
 
         return response()->json(['data' => [
-            'items' => $blogPosts->data,
-            'current_page' => $blogPosts->current_page,
-            'per_page' => $blogPosts->per_page,
-            'last_page' => $blogPosts->last_page,
-            'total' => $blogPosts->total
+            'items' => $blogPosts->items(),
+            'current_page' => $blogPosts->currentPage(),
+            'per_page' => $blogPosts->perPage(),
+            'last_page' => $blogPosts->lastPage(),
+            'total' => $blogPosts->total()
         ]], 200);
     }
 
@@ -228,11 +228,11 @@ class BlogPostController extends Controller
         $comments->paginate($perPage);
 
         return response()->json(['data' => [
-            'items' => $comments->data,
-            'current_page' => $comments->current_page,
-            'per_page' => $comments->per_page,
-            'last_page' => $comments->last_page,
-            'total' => $comments->total
+            'items' => $comments->items(),
+            'current_page' => $comments->currentPage(),
+            'per_page' => $comments->perPage(),
+            'last_page' => $comments->lastPage(),
+            'total' => $comments->total()
         ]], 200);
     }
 

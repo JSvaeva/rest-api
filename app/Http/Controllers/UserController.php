@@ -15,12 +15,13 @@ class UserController extends Controller
         $users = User::paginate($perPage);
 
         return response()->json(['data' => [
-            'items' => $users->data,
-            'current_page' => $users->current_page,
-            'per_page' => $users->per_page,
-            'last_page' => $users->last_page,
-            'total' => $users->total
+            'items' => $users->items(),
+            'current_page' => $users->currentPage(),
+            'per_page' => $users->perPage(),
+            'last_page' => $users->lastPage(),
+            'total' => $users->total()
         ]], 200);
+        //return response()->json($users);
     }
 
     public function create(Request $request)
@@ -195,11 +196,11 @@ class UserController extends Controller
         $comments->paginate($perPage);
 
         return response()->json(['data' => [
-            'items' => $comments->data,
-            'current_page' => $comments->current_page,
-            'per_page' => $comments->per_page,
-            'last_page' => $comments->last_page,
-            'total' => $comments->total
+            'items' => $comments->items(),
+            'current_page' => $comments->currentPage(),
+            'per_page' => $comments->perPage(),
+            'last_page' => $comments->lastPage(),
+            'total' => $comments->total()
         ]], 200);
     }
 
@@ -230,17 +231,21 @@ class UserController extends Controller
         $posts->paginate($perPage);
 
         return response()->json(['data' => [
-            'items' => $posts->data,
-            'current_page' => $posts->current_page,
-            'per_page' => $posts->per_page,
-            'last_page' => $posts->last_page,
-            'total' => $posts->total
+            'items' => $posts->items(),
+            'current_page' => $posts->currentPage(),
+            'per_page' => $posts->perPage(),
+            'last_page' => $posts->lastPage(),
+            'total' => $posts->total()
         ]], 200);
     }
 
     public function authenticate(Request $request)
     {
-        if (is_null($request->email)) {
+        if (Auth::check()) {
+            return response()->json(['message' => 'You are already logged in']);
+        }
+
+        if (is_null($request->nameOrEmail)) {
             return response()->json([
                 'http_code' => 422,
                 'code' => 1, 
@@ -258,15 +263,17 @@ class UserController extends Controller
             ], 422);
         }
 
-		if (Auth::attempt(array('email' => $request->email, 'password' => bcrypt($request->password)))) {
+		if (Auth::attempt(array('email' => $request->nameOrEmail, 'password' => bcrypt($request->password)))) {
 			return response()->json(['message' => 'You logged in successfully!']);
-		} else {
-			if ('email' !== $request->email) {
+		} else if (Auth::attempt(array('name' => $request->nameOrEmail, 'password' => bcrypt($request->password)))) {
+			return response()->json(['message' => 'You logged in successfully!']);
+        } else {
+			if ('email' !== $request->nameOrEmail && 'name' !== $request->nameOrEmail) {
                 return response()->json([
                     'http_code' => 422,
                     'code' => 1, 
                     'title' => 'Login Error',
-                    'message' => 'Incorrect email'
+                    'message' => 'Incorrect name/email'
                 ], 422);
             }
             else if ('password' !== bcrypt($request->password)) {
