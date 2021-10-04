@@ -27,7 +27,7 @@ class BlogPostController extends Controller
         
         $perPage = 15;
 
-        $blogPosts = BlogPost::orderBy($field.'_at', $type)->paginate($perPage);
+        $blogPosts = BlogPost::orderBy($field.'_at', $type)->paginate($perPage); //only take some of the pagination info!!!
 
         return response()->json(['data' => $blogPosts], 200);
     }
@@ -83,10 +83,18 @@ class BlogPostController extends Controller
         }
 
         $blogPost = BlogPost::find($id);
-        
-        if (!is_null($blogPost)) {
-            $blogPost->except(['created_at', 'updated_at']);
+
+        if (is_null($blogPost)) {
+            return response()->json([
+                'http_code' => 404,
+                'code' => 1, 
+                'title' => 'Post Not Found',
+                'message' => 'Post with id ' . $id . " does not exist"
+            ], 404);
         }
+        
+        $blogPost->except(['created_at', 'updated_at']);
+        
         return response()->json(['data' => $blogPost], 202);
     }
 
@@ -200,7 +208,7 @@ class BlogPostController extends Controller
 
         $perPage = 15;
 
-        return response()->json(['data' => BlogPost::find($id)->comments()->paginate($perPage)], 200);
+        return response()->json(['data' => BlogPost::find($id)->comments()->paginate($perPage)], 200); //only take some of the pagination info!!!
     }
 
     public function leaveComment(Request $request, $blogPostId) {

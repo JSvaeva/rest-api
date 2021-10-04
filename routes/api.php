@@ -32,5 +32,13 @@ Route::get('/comments/{id}', 'App\Http\Controllers\CommentsController@show')->na
 Route::put('/comments/{id}', 'App\Http\Controllers\CommentsController@update')->name('comment.update');
 Route::delete('/comments/{id}', 'App\Http\Controllers\CommentsController@destroy')->name('comment.destroy');
 
+Route::get('/users', 'App\Http\Controllers\UserController@index')->name('users.index');
+Route::post('/users', 'App\Http\Controllers\UserController@create')->name('users.create');
+Route::get('/users/{id}', 'App\Http\Controllers\UserController@show')->name('users.show');
+Route::put('/users/{id}', 'App\Http\Controllers\UserController@update')->name('users.update');
+Route::delete('/users/{id}', 'App\Http\Controllers\UserController@destroy')->name('users.destroy');
+Route::get('/users/{id}/comments', 'App\Http\Controllers\UserController@getUserComments')->name('users.comments');
+Route::get('/users/{id}/blogPosts', 'App\Http\Controllers\UserController@getUserBlogPosts')->name('users.blogPosts');
+
 //->middleware('auth');
 //need to be logged in to create comment
