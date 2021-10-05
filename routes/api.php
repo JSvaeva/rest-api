@@ -40,7 +40,8 @@ Route::delete('/users/{id}', 'App\Http\Controllers\UserController@destroy')->nam
 Route::get('/users/{id}/comments', 'App\Http\Controllers\UserController@getUserComments')->name('users.comments');
 Route::get('/users/{id}/blogPosts', 'App\Http\Controllers\UserController@getUserBlogPosts')->name('users.blogPosts');
 
-Route::put('/auth', 'App\Http\Controllers\UserController@authenticate')->name('users.auth');
+Route::put('/login', 'App\Http\Controllers\UserController@login')->name('users.login');
+Route::put('/logout', 'App\Http\Controllers\UserController@logout')->name('users.logout');
 
 //->middleware('auth');
 //need to be logged in to create comment

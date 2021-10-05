@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Validator;
+use Session;
 use App\Models\User;
 
 class UserController extends Controller
@@ -239,32 +240,27 @@ class UserController extends Controller
         ]], 200);
     }
 
-    public function authenticate(Request $request)
+    public function login(Request $request)
     {
         if (Auth::check()) {
             return response()->json(['message' => 'You are already logged in']);
         }
 
-        if (is_null($request->email)) {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email',
+            'password' => 'required'
+        ]);
+        if ($validator->fails()) {
             return response()->json([
                 'http_code' => 422,
                 'code' => 1, 
-                'title' => 'Login Error',
-                'message' => 'Email is null'
-            ], 422);
-        }
-
-        if (is_null($request->password)) {
-            return response()->json([
-                'http_code' => 422,
-                'code' => 1, 
-                'title' => 'Login Error',
-                'message' => 'Pwd is null'
+                'title' => 'Validation Error',
+                'message' => $validator->messages()
             ], 422);
         }
         
 		if (Auth::attempt(array('email' => $request->email, 'password' => $request->password))) {
-			return response()->json(['message' => 'You logged in successfully!']);
+            return response()->json(['message' => 'You logged in successfully!']);
 		} else {
             $user = User::where('email' , '=', $request->email)->first();
 
