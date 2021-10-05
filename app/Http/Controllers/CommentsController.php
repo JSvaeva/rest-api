@@ -60,6 +60,15 @@ class CommentsController extends Controller
         }
         $comment = Comment::find($id);
 
+        if (is_null($comment)) {
+            return response()->json([
+                'http_code' => 404,
+                'code' => 1, 
+                'title' => 'Post Not Found',
+                'message' => 'Post with id ' . $id . " does not exist"
+            ], 404);
+        }
+
         if (!Auth::user()->is_admin && $comment->author_id !== Auth::id()) {
             return response()->json([
                 'http_code' => 403,
@@ -106,6 +115,15 @@ class CommentsController extends Controller
             ], 422);
         }
         $comment = Comment::find($id);
+
+        if (is_null($comment)) {
+            return response()->json([
+                'http_code' => 404,
+                'code' => 1, 
+                'title' => 'Post Not Found',
+                'message' => 'Post with id ' . $id . " does not exist"
+            ], 404);
+        }
 
         if (!Auth::user()->is_admin && $comment->author_id !== Auth::id()) {
             return response()->json([
