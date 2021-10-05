@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Validator;
 use App\Models\BlogPost;
+use App\Models\Comment;
 use App\Models\User;
 
 class BlogPostController extends Controller
@@ -245,7 +246,7 @@ class BlogPostController extends Controller
             ], 401);
         }
 
-        if (filter_var($id, FILTER_VALIDATE_INT) === false) {
+        if (filter_var($blogPostId, FILTER_VALIDATE_INT) === false) {
             return response()->json([
                 'http_code' => 422,
                 'code' => 1, 
@@ -278,10 +279,9 @@ class BlogPostController extends Controller
         }
 
         $comment = Comment::create([
-            'id' => $request->id,
             'author_id' => Auth::id(),
             'blog_post_id' => $blogPostId,
-            'text' => $request->content
+            'text' => $request->text
         ]);
         return response()->json(['data' => $comment], 201);
     }
