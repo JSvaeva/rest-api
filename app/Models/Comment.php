@@ -12,7 +12,7 @@ class Comment extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['text', 'author_id', 'blog_post_id'];
+    protected $fillable = ['text', 'author_id', 'blog_post_id', 'author_id'];
 
     protected $dates = ['deleted_at'];
 

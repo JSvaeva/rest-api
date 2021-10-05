@@ -99,9 +99,11 @@ class BlogPostController extends Controller
             ], 404);
         }
         
-        $blogPost->except(['created_at', 'updated_at']);
-        
-        return response()->json(['data' => $blogPost], 202);
+        return response()->json(['data' => [
+            'id' => $blogPost->id,
+            'author_id' => $blogPost->author_id,
+            'title' => $blogPost->title,
+            'content' => $blogPost->content ]], 202);
     }
 
     /**
@@ -111,7 +113,7 @@ class BlogPostController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id) //admin
+    public function update(Request $request, $id)
     {
         if (!Auth::check()) {
             return response()->json([
@@ -143,8 +145,7 @@ class BlogPostController extends Controller
 
         $validator = Validator::make($request->all(), [
             'title' => 'required|max:100',
-            'content' => 'required|min:10|max:5000',
-            'author_id' => 'required'
+            'content' => 'required|min:10|max:5000'
         ]);
         if ($validator->fails()) {
             return response()->json([
@@ -154,8 +155,7 @@ class BlogPostController extends Controller
                 'message' => $validator->messages()
             ], 422);
         }
-
-                
+        
         $blogPost->update($request->all());
     
         return response()->json(['data' => $blogPost], 202);
@@ -219,13 +219,12 @@ class BlogPostController extends Controller
             return response()->json([
                 'http_code' => 404,
                 'code' => 1, 
-                'title' => 'User Not Found',
-                'message' => 'User with id ' . $id . " does not exist"
+                'title' => 'Post Not Found',
+                'message' => 'Post with id ' . $id . " does not exist"
             ], 404);
         }
         
-        $comments = $blogPost->comments();
-        $comments->paginate($perPage);
+        $comments = $blogPost->comments()->paginate($perPage);
 
         return response()->json(['data' => [
             'items' => $comments->items(),
@@ -244,6 +243,26 @@ class BlogPostController extends Controller
                 'title' => 'Log In Error',
                 'message' => 'You must be logged in to view this page'
             ], 401);
+        }
+
+        if (filter_var($id, FILTER_VALIDATE_INT) === false) {
+            return response()->json([
+                'http_code' => 422,
+                'code' => 1, 
+                'title' => 'Validation Error',
+                'message' => 'Id ' . $id . ' is not integer'
+            ], 422);
+        }
+        
+        $blogPost = BlogPost::find($blogPostId);
+
+        if (is_null($blogPost)) {
+            return response()->json([
+                'http_code' => 404,
+                'code' => 1, 
+                'title' => 'Post Not Found',
+                'message' => 'Post with id ' . $id . " does not exist"
+            ], 404);
         }
 
         $validator = Validator::make($request->all(), [

@@ -63,10 +63,20 @@ class UserController extends Controller
 
         $user = User::find($id);
         
-        if (!is_null($user)) {
-            $user->except(['created_at', 'updated_at']);
+        if (is_null($user)) {
+            return response()->json([
+                'http_code' => 404,
+                'code' => 1, 
+                'title' => 'User Not Found',
+                'message' => 'User with id ' . $id . " does not exist"
+            ], 404);
         }
-        return response()->json(['data' => $user], 202);
+
+        return response()->json(['data' => [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'is_admin' => $user->is_admin ]], 202);
     }
 
     /**
@@ -193,8 +203,7 @@ class UserController extends Controller
             ], 404);
         }
         
-        $comments = $user->comments();
-        $comments->paginate($perPage);
+        $comments = $user->comments()->paginate($perPage);
 
         return response()->json(['data' => [
             'items' => $comments->items(),
@@ -228,8 +237,7 @@ class UserController extends Controller
             ], 404);
         }
         
-        $posts = $user->blogPosts();
-        $posts->paginate($perPage);
+        $posts = $user->blogPosts()->paginate($perPage);
 
         return response()->json(['data' => [
             'items' => $posts->items(),

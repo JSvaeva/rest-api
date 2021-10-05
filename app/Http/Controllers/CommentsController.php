@@ -22,8 +22,22 @@ class CommentsController extends Controller
             ], 422);
         }
 
-        $comment = Comment::find($id)->except(['created_at', 'updated_at']);
-        return response()->json(['data' => $comment], 202);
+        $comment = Comment::find($id);
+
+        if (is_null($comment)) {
+            return response()->json([
+                'http_code' => 404,
+                'code' => 1, 
+                'title' => 'Post Not Found',
+                'message' => 'Post with id ' . $id . " does not exist"
+            ], 404);
+        }
+
+        return response()->json(['data' => [
+            'id' => $comment->id,
+            'author_id' => $comment->author_id,
+            'blog_post_id' => $comment->blog_post_id,
+            'text' => $comment->text ]], 202);
     }
 
     public function update(Request $request, $id) {
