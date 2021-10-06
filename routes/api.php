@@ -16,8 +16,8 @@ use Illuminate\Auth\Middleware\Authenticate;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/user', 'UserController@user')->name('user');
 });
 
 Route::group(array('namespace' => 'App\Http\Controllers'), function () {
@@ -39,14 +39,16 @@ Route::group(array('namespace' => 'App\Http\Controllers'), function () {
 
     Route::name('users.')->group(function () {
         Route::get('/users', 'UserController@index')->name('index');
-        Route::post('/users', 'UserController@create')->name('create');
         Route::get('/users/{id}', 'UserController@show')->name('show');
         Route::put('/users/{id}', 'UserController@update')->name('update');
         Route::delete('/users/{id}', 'UserController@destroy')->name('destroy');
         Route::get('/users/{id}/comments', 'UserController@getUserComments')->name('comments');
         Route::get('/users/{id}/blogPosts', 'UserController@getUserBlogPosts')->name('blogPosts');
+    });
 
-        Route::put('/login', 'UserController@login')->name('login');
-        Route::put('/logout', 'UserController@logout')->name('logout');
+    Route::name('auth.')->group(function () {
+        Route::post('/auth/register', 'UserController@register')->name('register');
+        Route::get('/auth/login', 'UserController@login')->name('login');
+        Route::get('/auth/logout', 'UserController@logout')->name('logout');
     });
 });

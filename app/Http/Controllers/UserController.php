@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Validator;
-use Session;
 use App\Models\User;
 
 class UserController extends Controller
@@ -23,31 +22,6 @@ class UserController extends Controller
             'total' => $users->total()
         ]], 200);
         //return response()->json($users);
-    }
-
-    public function create(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|max:100',
-            'email' => 'required|email|max:255|unique:users',
-            'password' => 'required|min:6'
-        ]);
-        if ($validator->fails()) {
-            return response()->json([
-                'http_code' => 422,
-                'code' => 1, 
-                'title' => 'Validation Error',
-                'message' => $validator->messages()
-            ], 422);
-        }
-
-        $user = User::create(array(
-            'name' => $request->name, 
-            'email' => $request->email,
-            'password' => bcrypt($request->password),
-        ));
-
-        return response()->json(['data' => $user], 201);
     }
 
     public function show($id)
@@ -248,6 +222,31 @@ class UserController extends Controller
         ]], 200);
     }
 
+    public function register(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|max:100',
+            'email' => 'required|email|max:255|unique:users',
+            'password' => 'required|min:6'
+        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'http_code' => 422,
+                'code' => 1, 
+                'title' => 'Validation Error',
+                'message' => $validator->messages()
+            ], 422);
+        }
+
+        $user = User::create(array(
+            'name' => $request->name, 
+            'email' => $request->email,
+            'password' => bcrypt($request->password),
+        ));
+
+        return response()->json(['data' => $user], 201);
+    }
+
     public function login(Request $request)
     {
         if (Auth::check()) {
@@ -267,32 +266,32 @@ class UserController extends Controller
             ], 422);
         }
         
-		if (Auth::attempt(array('email' => $request->email, 'password' => $request->password))) {
-            return response()->json(['message' => 'You logged in successfully!']);
+		if (!Auth::attempt($request->only('email', 'password'))) {
+            return response()->json([
+                'http_code' => 422,
+                'code' => 1,
+                'message' => 'Incorrect login data'
+            ], 422);
 		} else {
-            $user = User::where('email' , '=', $request->email)->first();
+            $user = Auth::user();
+            $token = $user->createToken('token')->plainTextToken;
 
-			if (is_null($user)) {
-                return response()->json([
-                    'http_code' => 422,
-                    'code' => 1, 
-                    'title' => 'Login Error',
-                    'message' => 'Incorrect email'
-                ], 422);
-            }
-            else if ($user->password !== bcrypt($request->password)) {
-                return response()->json([
-                    'http_code' => 422,
-                    'code' => 1, 
-                    'title' => 'Login Error',
-                    'message' => 'Incorrect pwd'
-                ], 422);
-            }
+            $cookie = cookie('jwt', $token, 60 * 24);
+
+            return response()->json([
+                'id' => Auth::id(),
+                'user' => Auth::user()->name,
+                'message' => 'You logged in successfully!',
+            ])->withCookie($cookie);
 		}
     }
 
     public function logout() {
 		Auth::logout();
         return response()->json(['message' => 'You logged out successfully!']);
+    }
+
+    public function user() {
+        return Auth::user();
     }
 }
