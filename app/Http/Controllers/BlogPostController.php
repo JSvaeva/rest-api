@@ -22,7 +22,7 @@ class BlogPostController extends Controller
             $type = 'asc';
         }
 
-        if ($field != 'created' && field != 'updated') {
+        if ($field != 'created' && $field != 'updated') {
             $field = 'updated';
         }
         
