@@ -20,28 +20,33 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('/blogPosts/{type}/{field}', 'App\Http\Controllers\BlogPostController@index')->name('blogPosts.index');
-Route::post('/blogPosts', 'App\Http\Controllers\BlogPostController@create')->name('blogPosts.create');
-Route::get('/blogPosts/{id}', 'App\Http\Controllers\BlogPostController@show')->name('blogPosts.show');
-Route::put('/blogPosts/{id}', 'App\Http\Controllers\BlogPostController@update')->name('blogPosts.update');
-Route::delete('/blogPosts/{id}', 'App\Http\Controllers\BlogPostController@destroy')->name('blogPosts.destroy');
-Route::post('/blogPosts/{id}/comments/leavecomment', 'App\Http\Controllers\BlogPostController@leaveComment')->name('blogPosts.leaveComment');
-Route::get('/blogPosts/{id}/comments/all', 'App\Http\Controllers\BlogPostController@getBlogComments')->name('blogPosts.comments');
+Route::group(array('namespace' => 'App\Http\Controllers'), function () {
+    Route::name('blogPosts.')->group(function () {
+        Route::get('/blogPosts/{type}/{field}', 'BlogPostController@index')->name('index');
+        Route::post('/blogPosts', 'BlogPostController@create')->name('create');
+        Route::get('/blogPosts/{id}', 'BlogPostController@show')->name('show');
+        Route::put('/blogPosts/{id}', 'BlogPostController@update')->name('update');
+        Route::delete('/blogPosts/{id}', 'BlogPostController@destroy')->name('destroy');
+        Route::post('/blogPosts/{id}/comments/leavecomment', 'BlogPostController@leaveComment')->name('leaveComment');
+        Route::get('/blogPosts/{id}/comments/all', 'BlogPostController@getBlogComments')->name('comments');
+    });
 
-Route::get('/comments/{id}', 'App\Http\Controllers\CommentsController@show')->name('comment.show');
-Route::put('/comments/{id}', 'App\Http\Controllers\CommentsController@update')->name('comment.update');
-Route::delete('/comments/{id}', 'App\Http\Controllers\CommentsController@destroy')->name('comment.destroy');
+    Route::name('comments.')->group(function () {
+        Route::get('/comments/{id}', 'CommentsController@show')->name('show');
+        Route::put('/comments/{id}', 'CommentsController@update')->name('update');
+        Route::delete('/comments/{id}', 'CommentsController@destroy')->name('destroy');
+    });
 
-Route::get('/users', 'App\Http\Controllers\UserController@index')->name('users.index');
-Route::post('/users', 'App\Http\Controllers\UserController@create')->name('users.create');
-Route::get('/users/{id}', 'App\Http\Controllers\UserController@show')->name('users.show');
-Route::put('/users/{id}', 'App\Http\Controllers\UserController@update')->name('users.update');
-Route::delete('/users/{id}', 'App\Http\Controllers\UserController@destroy')->name('users.destroy');
-Route::get('/users/{id}/comments', 'App\Http\Controllers\UserController@getUserComments')->name('users.comments');
-Route::get('/users/{id}/blogPosts', 'App\Http\Controllers\UserController@getUserBlogPosts')->name('users.blogPosts');
+    Route::name('users.')->group(function () {
+        Route::get('/users', 'UserController@index')->name('index');
+        Route::post('/users', 'UserController@create')->name('create');
+        Route::get('/users/{id}', 'UserController@show')->name('show');
+        Route::put('/users/{id}', 'UserController@update')->name('update');
+        Route::delete('/users/{id}', 'UserController@destroy')->name('destroy');
+        Route::get('/users/{id}/comments', 'UserController@getUserComments')->name('comments');
+        Route::get('/users/{id}/blogPosts', 'UserController@getUserBlogPosts')->name('blogPosts');
 
-Route::put('/login', 'App\Http\Controllers\UserController@login')->name('users.login');
-Route::put('/logout', 'App\Http\Controllers\UserController@logout')->name('users.logout');
-
-//->middleware('auth');
-//need to be logged in to create comment
+        Route::put('/login', 'UserController@login')->name('login');
+        Route::put('/logout', 'UserController@logout')->name('logout');
+    });
+});
